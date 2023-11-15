@@ -1,0 +1,102 @@
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 20px;
+    padding: 20px;
+  }
+  
+  h1 {
+    color: #333;
+  }
+  
+  h2 {
+    color: #555;
+  }
+  
+  form {
+    margin-bottom: 20px;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 5px;
+    color: #666;
+  }
+  
+  input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+  }
+  
+  button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background-color: #45a049;
+  }
+  
+  /* File input styling */
+  input[type="file"] {
+    display: none;
+  }
+  
+  .custom-file-upload {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    display: inline-block;
+  }
+  
+  /* Styling for file upload input */
+  input[type="file"] + label {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    display: inline-block;
+  }
+  
+  /* Styling for Manage Files buttons */
+  #manageFilesForm button {
+    margin-right: 10px;
+  }
+  
+  /* Responsive styles */
+  @media (max-width: 600px) {
+    input {
+      width: 100%;
+    }
+  
+    button {
+      width: 100%;
+    }
+  }
+  
+  /* styles.css */
+
+/* Style for folder cards */
+.folder-card {
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* Style for subfolder cards */
+.subfolder-card {
+  margin-left: 20px; /* Indent subfolders for visual hierarchy */
+  border: 1px solid #ccc;
+  padding: 5px;
+  border-radius: 3px;
+}
+

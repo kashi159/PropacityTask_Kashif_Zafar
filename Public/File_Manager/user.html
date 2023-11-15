@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Manager</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <h1>File Manager</h1>
+
+<ul id="foldersList">
+</ul>
+
+
+  <h2>Create Folder</h2>
+  <form id="createFolderForm">
+    <label for="folderName">Folder Name:</label>
+    <input type="text" id="folderName" name="folderName" required>
+    <button type="button" onclick="createFolder()">Create Folder</button>
+  </form>
+
+  <h2>Create Subfolder</h2>
+  <form id="createSubfolderForm">
+    <label for="subfolderName">Subfolder Name:</label>
+    <input type="text" id="subfolderName" name="subfolderName" required>
+    <label for="parentId">Parent Folder ID:</label>
+    <input type="text" id="parentId" name="parentId" required>
+    <button type="button" onclick="createSubfolder()">Create Subfolder</button>
+  </form>
+
+  <h2>Upload File</h2>
+  <form id="uploadFileForm">
+    <label for="file" class="file-label">Choose a file:</label>
+    <div class="file-input-container">
+      <input type="file" id="file" name="file" accept="*" style="display: none;">
+      <button type="button" id="chooseFileBtn" onclick="document.getElementById('file').click()">Choose File</button>
+    </div>
+    <label for="folderId">Folder ID:</label>
+    <input type="text" id="folderId" name="folderId" required>
+    <button type="button" onclick="uploadFile()">Upload File</button>
+  </form>
+  
+
+  <h2>Manage Files</h2>
+  <form id="manageFilesForm">
+    <label for="fileId">File ID:</label>
+    <input type="text" id="fileId" name="fileId" required>
+    <label for="newName">New File Name:</label>
+    <input type="text" id="newName" name="newName">
+    <label for="newFolderId">New Folder ID:</label>
+    <input type="text" id="newFolderId" name="newFolderId">
+    <button type="button" onclick="renameFile()">Rename File</button>
+    <button type="button" onclick="moveFile()">Move File</button>
+    <button type="button" onclick="deleteFile()">Delete File</button>
+  </form>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+
+    const token = localStorage.getItem('token')
+    
+    async function fetchFolders() {
+      try {
+        const response = await axios.get(`http://localhost:4000/user/folders`, {
+          headers: {
+            "Authorization": token,
+          }
+        });
+
+        // console.log(response);
+        if (response.status !== 200) {
+          throw new Error('Error fetching folders');
+        }
+
+        const folders = response.data;
+        renderFolders(folders);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+
+    function renderFolders(folders) {
+  const foldersList = document.getElementById('foldersList');
+  foldersList.innerHTML = '';
+
+  folders.forEach(folder => {
+
+    const folderCard = document.createElement('div');
+    folderCard.className = 'folder-card';
+    folderCard.textContent = `${folder.name} ${folder.id}`;
+
+    const button = document.createElement('button');
+    button.textContent = 'View Subfolders';
+
+    button.addEventListener('click', () => {
+      fetchSubfolders(folder.id);;
+      fetchFiles(folder.id)
+    });
+
+    folderCard.appendChild(button);
+    folderCard.id = `folder_${folder.id}`;
+    foldersList.appendChild(folderCard);
+  });
+}
+
+
+
+async function fetchSubfolders(parentFolderId) {
+      try {
+        const response = await axios.get(`http://localhost:4000/user/folders/${parentFolderId}/subfolders`, {
+          headers: {
+            "Authorization": token,
+          }
+        });
+
+        if (response.status !== 200) {
+          throw new Error('Error fetching subfolders');
+        }
+        // console.log(response)
+        const subfolders = response.data;
+        renderSubfolders(subfolders, parentFolderId);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+
+function renderSubfolders(subfolders, parentId) {
+  const parentFolderContainer = document.getElementById(`folder_${parentId}`);
+
+  if (!parentFolderContainer) {
+    console.error(`Parent folder container not found for folder ID ${parentId}`);
+    return;
+  }
+
+  parentFolderContainer.innerHTML = '';
+
+  subfolders.forEach(subfolder => {
+    const subfolderCard = document.createElement('div');
+    subfolderCard.className = 'subfolder-card';
+    subfolderCard.textContent = `${subfolder.name} ${subfolder.id}`;
+
+    parentFolderContainer.appendChild(subfolderCard);
+  });
+}
+
+async function fetchFiles(parentFolderId) {
+      try {
+        const response = await axios.get(`http://localhost:4000/uploads/files/${parentFolderId}`, {
+          headers: {
+            "Authorization": token,
+          }
+        });
+
+        if (response.status !== 200) {
+          throw new Error('Error fetching subfolders');
+        }
+        // console.log(response)
+        const files= response.data;
+        renderFiles(files, parentFolderId);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+
+function renderFiles(files, parentId) {
+  const parentFolderContainer = document.getElementById(`folder_${parentId}`);
+
+  if (!parentFolderContainer) {
+    console.error(`Parent folder container not found for folder ID ${parentId}`);
+    return;
+  }
+
+  parentFolderContainer.innerHTML = '';
+
+  files.forEach(file => {
+    const fileCard = document.createElement('div');
+    fileCard.className = 'subfolder-card';
+    fileCard.textContent = `${file.id} - ${file.file_name} ${file.url}`;
+
+    parentFolderContainer.appendChild(fileCard);
+  });
+}
+
+    window.addEventListener('DOMContentLoaded', fetchFolders);
+
+
+  async function createFolder() {
+    try{
+      const folderName = document.getElementById('folderName').value;
+      const response = await axios.post('http://localhost:4000/folder/createfolder', {folderName}, {
+          headers: {
+            "Authorization": token,
+          }
+        } );
+      // console.log(response)
+      }catch(err){
+      console.log(err)
+    }
+  }
+
+  async function createSubfolder() {
+    const subfolderName = document.getElementById('subfolderName').value;
+    const parentId = document.getElementById('parentId').value;
+    const folderName = document.getElementById('folderName').value;
+
+    try{
+      const data = {
+        subfolderName: subfolderName,
+        parentId: parentId,
+        folderName: folderName
+      }
+
+      const response = await axios.post('http://localhost:4000/folder/createsubfolder', {data}, {
+          headers: {
+            "Authorization": token,
+          }
+        });
+      // console.log(response)
+      }catch(err){
+      console.log(err)
+    }
+  }
+  
+
+  async function uploadFile() {
+  const fileInput = document.getElementById('file');
+  const folderId = document.getElementById('folderId').value;
+    // console.log(fileInput)
+
+    const formData = new FormData();
+  formData.append('file', fileInput.files[0]);
+  formData.append('folderId', folderId);
+
+  // console.log(formData)
+
+  try {
+    const response = await axios.post('http://localhost:4000/upload/file', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data', 
+        'Authorization': token,
+      },
+    });
+    // console.log(response.data);
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+
+  async function renameFile() {
+    const fileId = document.getElementById('fileId').value;
+    const newName = document.getElementById('newName').value;
+    try{
+      const response = await axios.put(`http://localhost:4000/folder/renamefile/${fileId}`, {newName}, {
+          headers: {
+            "Authorization": token,
+          }
+        });
+      // console.log(response)
+      }catch(err){
+      console.log(err)
+    }
+  }
+
+  async function moveFile() {
+    const fileId = document.getElementById('fileId').value;
+    const newFolderId = document.getElementById('newFolderId').value;
+    try{
+      const folderName = document.getElementById('folderName').value;
+      const response = await axios.post(`http://localhost:4000/folder/movefile/${fileId}`, {newFolderId},{
+          headers: {
+            "Authorization": token,
+          }
+        });
+      // console.log(response)
+      }catch(err){
+      console.log(err)
+    }
+  }
+
+  async function deleteFile() {
+    const fileId = document.getElementById('fileId').value;
+    try{
+      const folderName = document.getElementById('folderName').value;
+      const response = await axios.delete(`http://localhost:4000/folder/deletefile/${fileId}`,{
+          headers: {
+            "Authorization": token,
+          }
+        });
+      // console.log(response)
+      }catch(err){
+      console.log(err)
+    }
+  }
+  </script>
+
+</body>
+</html>
