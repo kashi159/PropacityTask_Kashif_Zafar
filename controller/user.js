@@ -2,7 +2,7 @@ const {pool} = require('../util/database')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-exports.postSignUpUser = async (req, res) => {
+exports.postSignUpUser = async (req, res, next) => {
     const { username, email, password } = req.body;
   
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -14,8 +14,9 @@ exports.postSignUpUser = async (req, res) => {
       const result = await pool.query(query, values);
       res.json(result.rows[0]);
     } catch (error) {
-      console.error(error);
+      // console.error(error);
       res.status(500).send('Error registering user');
+      next(error)
     }
   };
 
@@ -24,7 +25,7 @@ exports.postSignUpUser = async (req, res) => {
   }
   
   
-  exports.postLoginUser = async (req, res) => {
+  exports.postLoginUser = async (req, res, next) => {
     const { email, password } = req.body;
   
     const query = 'SELECT * FROM public.users WHERE email = $1';
@@ -45,8 +46,9 @@ exports.postSignUpUser = async (req, res) => {
         res.status(404).json({ message: 'User not found' });
       }
     } catch (error) {
-      console.error(error);
-      res.status(500).send('Error during login');
+      // console.error(error);
+      next(error)
+      // res.status(500).send('Error during login');
     }
   };
   

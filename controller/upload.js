@@ -30,7 +30,7 @@ const upload = multer({
   }),
 });
 
-exports.uploadFile = (req, res) => {
+exports.uploadFile = (req, res, next) => {
   upload.single('file')(req, res, async function (err) {
     if (err) {
       console.error(err);
@@ -56,13 +56,14 @@ exports.uploadFile = (req, res) => {
       const result = await pool.query(query, values);
       res.json(result.rows[0]);
     } catch (error) {
-      console.error(error);
+      // console.error(error);
       res.status(500).send('Error processing file.');
+      next(error)
     }
   });
 };
 
-exports.getFiles = async (req, res) => {
+exports.getFiles = async (req, res, next) => {
   const parentFolderId = req.params.folderId;
         // console.log(parentFolderId)
         const query = 'SELECT id, file_name, url FROM uploads WHERE folder_id = $1';
@@ -72,7 +73,8 @@ exports.getFiles = async (req, res) => {
     const result = await pool.query(query, values);
     res.json(result.rows);
   } catch (error) {
-    console.error(error);
+    // console.error(error);
     res.status(500).send('Error retrieving files');
+    next(error)
   }
 };

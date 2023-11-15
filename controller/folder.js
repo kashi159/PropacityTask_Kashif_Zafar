@@ -1,6 +1,6 @@
 const {pool} = require('../util/database')
 
-exports.getFolders = async (req, res) => {
+exports.getFolders = async (req, res, next) => {
     const userId = req.user.id; 
   
     const query = `
@@ -14,12 +14,13 @@ exports.getFolders = async (req, res) => {
       const result = await pool.query(query, values);
       res.json(result.rows);
     } catch (error) {
-      console.error(error);
+      // console.error(error);
       res.status(500).send('Error retrieving folders');
+      next(error)
     }
   };
 
-exports.getSubFolders = async (req, res) => {
+exports.getSubFolders = async (req, res, next) => {
     
     try {
         const parentFolderId = req.params.folderId;
@@ -31,14 +32,15 @@ exports.getSubFolders = async (req, res) => {
 
         res.status(200).json(result.rows);
     } catch (error) {
-        console.error(error);
+        // console.error(error);
         res.status(500).send('Error retrieving subfolders');
+        next(error)
 }
 }; 
 
 
 
-exports.postFolder = async (req, res) => {
+exports.postFolder = async (req, res, next) => {
   const folderName = req.body.folderName
     const userId = req.user.id;
     // console.log(folderName)
@@ -51,12 +53,13 @@ exports.postFolder = async (req, res) => {
       const result = await pool.query(query, values);
       res.json(result.rows[0]);
     } catch (error) {
-      console.error(error);
+      // console.error(error);
       res.status(500).send('Error creating folder');
+      next(error)
     }
   };
   
-  exports.postSubFolder = async (req, res) => {
+  exports.postSubFolder = async (req, res, next) => {
     const userId = req.user.id;
     const { subfolderName, parentId} = req.body.data;
   
@@ -68,12 +71,13 @@ exports.postFolder = async (req, res) => {
       const result = await pool.query(query, values);
       res.json(result.rows[0]);
     } catch (error) {
-      console.error(error);
+      // console.error(error);
       res.status(500).send('Error creating subfolder');
+      next(error)
     }
   };
 
-exports.renameFile = async (req, res) => {
+exports.renameFile = async (req, res, next) => {
     const { fileId } = req.params;
     const { newName } = req.body;
     const userId = req.user.id;
@@ -87,12 +91,13 @@ const values = [newName, fileId, userId];
       const result = await pool.query(query, values);
       res.json(result.rows[0]);
     } catch (error) {
-      console.error(error);
+      // console.error(error);
       res.status(500).send('Error renaming file');
+      next(error)
     }
   };
   
-  exports.moveFile = async (req, res) => {
+  exports.moveFile = async (req, res, next) => {
     const { fileId } = req.params;
     const { newFolderId } = req.body;
     // console.log(ne)
@@ -105,12 +110,13 @@ const values = [newName, fileId, userId];
       const result = await pool.query(query, values);
       res.json(result.rows[0]);
     } catch (error) {
-      console.error(error);
+      // console.error(error);
       res.status(500).send('Error moving file');
+      next(error)
     }
   };
   
-  exports.deleteFile = async (req, res) => {
+  exports.deleteFile = async (req, res, next) => {
     const { fileId } = req.params;
     const userId = req.user.id;
 
@@ -127,7 +133,8 @@ const values = [newName, fileId, userId];
         res.json({ message: 'File deleted successfully' });
       }
     } catch (error) {
-      console.error(error);
+      // console.error(error);
       res.status(500).send('Error deleting file');
+      next(error)
     }
   };

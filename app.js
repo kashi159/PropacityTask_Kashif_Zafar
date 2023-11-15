@@ -19,6 +19,11 @@ app.use(userRoutes)
 app.use(folderRoutes)
 app.use(uploadRoutes);
 
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(400).send("Validation error");
+});
+
 initializeTables.initializeTables();
 
 
